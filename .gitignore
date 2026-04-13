@@ -9,6 +9,6 @@ __pycache__/
 # ⚠️ MUY IMPORTANTE: Secretos y Credenciales
 .streamlit/secrets.toml
 .env
-
+.venv/
 # Base de datos local (por si acaso)
 *.sqlite3
