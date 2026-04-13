@@ -2,6 +2,7 @@ import streamlit as st
 from db_manager import fetch_data
 import pandas as pd
 import json
+import altair as alt
 
 st.set_page_config(page_title="Tráfico y Posicionamiento | An16", page_icon="🚀", layout="wide")
 
@@ -77,17 +78,23 @@ try:
         with col_graf1:
             st.caption("¿En qué página de Google estás realmente?")
             st.write("Idealmente, queremos que la mayoría de tus palabras estén en color verde (Página 1).")
-            # Preparamos los datos para el gráfico de barras
-            dist_data = {
-                "Top 3 (Mina de oro)": top_3, 
-                "Pos 4-10 (1ra Página)": pag_1_resto, 
-                "Pos 11-20 (2da Página)": pagina_2, 
-                "Pos 21+ (Casi Invisibles)": len(df_kw_propias[df_kw_propias['posicion'] > 20])
-            }
-            df_dist = pd.DataFrame(list(dist_data.items()), columns=['Zona de Google', 'Cantidad de Palabras']).set_index('Zona de Google')
             
-            # Gráfico de barras de Streamlit
-            st.bar_chart(df_dist, color="#00c04b", height=250)
+            # Preparamos los datos para Altair
+            dist_data = [
+                {"Zona de Google": "Top 3 (Mina de oro)", "Cantidad de Palabras": top_3},
+                {"Zona de Google": "Pos 4-10 (1ra Página)", "Cantidad de Palabras": pag_1_resto},
+                {"Zona de Google": "Pos 11-20 (2da Página)", "Cantidad de Palabras": pagina_2},
+                {"Zona de Google": "Pos 21+ (Casi Invisibles)", "Cantidad de Palabras": len(df_kw_propias[df_kw_propias['posicion'] > 20])}
+            ]
+            df_dist = pd.DataFrame(dist_data)
+            
+            # Gráfico de Altair con texto horizontal (labelAngle=0)
+            chart_dist = alt.Chart(df_dist).mark_bar(color="#00c04b").encode(
+                x=alt.X("Zona de Google", sort=None, axis=alt.Axis(labelAngle=0, title=None)), 
+                y=alt.Y("Cantidad de Palabras", axis=alt.Axis(title=None, tickMinStep=1))
+            ).properties(height=250)
+            
+            st.altair_chart(chart_dist, use_container_width=True)
 
         with col_graf2:
             st.caption("Tus Oportunidades más urgentes (A punto de caramelo)")
@@ -98,9 +105,16 @@ try:
             df_urgentes = df_urgentes.sort_values(by='volumen', ascending=False).head(5) # Mostramos el top 5 urgente
             
             if not df_urgentes.empty:
-                # Preparamos gráfico
-                df_graf_urgentes = df_urgentes[['keyword', 'volumen']].set_index('keyword')
-                st.bar_chart(df_graf_urgentes, color="#ffa421", height=250) # Naranja de alerta
+                # Preparamos gráfico de Altair
+                df_graf_urgentes = df_urgentes[['keyword', 'volumen']].rename(columns={'keyword': 'Servicio', 'volumen': 'Búsquedas'})
+                
+                # Gráfico con texto horizontal
+                chart_urgentes = alt.Chart(df_graf_urgentes).mark_bar(color="#ffa421").encode(
+                    x=alt.X("Servicio", sort=None, axis=alt.Axis(labelAngle=0, title=None)),
+                    y=alt.Y("Búsquedas", axis=alt.Axis(title=None))
+                ).properties(height=250)
+                
+                st.altair_chart(chart_urgentes, use_container_width=True)
             else:
                 st.info("No tienes palabras estancadas en la página 2 en este momento.")
 

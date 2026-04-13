@@ -2,6 +2,7 @@ import streamlit as st
 from db_manager import fetch_data
 import pandas as pd
 import json
+import altair as alt
 
 st.set_page_config(page_title="Competencia | An16", page_icon="⚔️", layout="wide")
 
@@ -116,11 +117,29 @@ for index, row in df_comp.iterrows():
                 
                 with col_m3:
                     st.caption("Balance del Enfrentamiento")
-                    # Manejo de colores seguro en Streamlit
-                    colores = ["#ff4b4b" if x == "🔴 Perdiendo" else "#00c04b" if x == "🟢 Ganamos" else "#ffa421" for x in conteo_estados.index]
-                    st.bar_chart(conteo_estados, color=colores, height=150)
+                    
+                    # 1. Convertimos los datos a un formato que Altair entiende mejor (DataFrame)
+                    df_chart = conteo_estados.reset_index()
+                    df_chart.columns = ["Estado", "Cantidad"]
 
-                st.markdown("---")
+                    # 2. Construimos el gráfico controlando el ángulo del texto
+                    chart = alt.Chart(df_chart).mark_bar().encode(
+                        x=alt.X("Estado", axis=alt.Axis(labelAngle=0, title=None)), # 🔥 MAGIA: labelAngle=0 hace el texto horizontal
+                        y=alt.Y("Cantidad", axis=alt.Axis(title=None, tickMinStep=1)), # tickMinStep=1 evita números decimales raros en el eje Y
+                        color=alt.Color(
+                            "Estado",
+                            scale=alt.Scale(
+                                domain=["🔴 Perdiendo", "🟢 Ganamos"],
+                                range=["#ff4b4b", "#00c04b"] # Asignamos los colores exactos
+                            ),
+                            legend=None # Ocultamos la leyenda para mantenerlo limpio
+                        )
+                    ).properties(height=150)
+
+                    # 3. Mostramos el gráfico avanzado en lugar del básico
+                    st.altair_chart(chart, use_container_width=True)
+                    
+                    st.markdown("---")
 
                 # --- TABLA DE OPORTUNIDADES ---
                 st.markdown("#### 📋 Detalle de Palabras Clave (El Botín)")

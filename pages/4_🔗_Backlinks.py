@@ -46,7 +46,7 @@ col2.metric("Webs que te recomiendan", f"{dominios:,.0f}", help=help_dominios)
 # 3. Total de Enlaces
 enlaces = int(row['total_backlinks'] or 0)
 help_enlaces = "El volumen total de links que apuntan hacia ti. Si este número es gigantesco pero las 'Webs que te recomiendan' son muy pocas, Google podría considerarlo trampa."
-col3.metric("Total de Votos (Enlaces)", f"{enlaces:,.0f}", help=help_enlaces)
+col3.metric("Total de backlinks (Enlaces)", f"{enlaces:,.0f}", help=help_enlaces)
 
 # 4. Spam Score General (Nuevo campo) - Usamos .get por si acaso auditan webs viejas
 spam_score = int(round(float(row.get('spam_score_general', 0))))
