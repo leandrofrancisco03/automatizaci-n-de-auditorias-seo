@@ -1,0 +1,14 @@
+# Entorno virtual
+venv/
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# ⚠️ MUY IMPORTANTE: Secretos y Credenciales
+.streamlit/secrets.toml
+.env
+
+# Base de datos local (por si acaso)
+*.sqlite3
