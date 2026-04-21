@@ -12,3 +12,25 @@ __pycache__/
 .venv/
 # Base de datos local (por si acaso)
 *.sqlite3
+# Logs
+logs/
+*.log
+# Configuración de Streamlit
+.streamlit/config.toml
+# Archivos de desarrollo
+reports/
+*.ipynb_checkpoints
+# Archivos de exportación
+*.csv
+*.xlsx
+*.json
+*.pdf
+# Archivos de despliegue
+dist/
+build/
+*.egg-info/
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+.generar_pdf.cpython-310.pyc
+agencia_n16_auditoria/reports/

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Helvetica', sans-serif; color: #2b2b36; margin: 0; padding: 0; }
+        .brand-blue { color: #0f3082; }
+        .brand-orange { color: #f06c00; }
+        
+        .cover { height: 29.7cm; background: #0f3082; color: white; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .logo { font-size: 100pt; font-weight: bold; margin-bottom: 20px; }
+        .logo span { color: #f06c00; }
+        
+        .page { height: 29.7cm; padding: 2cm; box-sizing: border-box; position: relative; page-break-after: always; background: white; }
+        .footer { position: absolute; bottom: 1cm; left: 2cm; right: 2cm; font-size: 9pt; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+
+        .grid { display: flex; flex-wrap: wrap; gap: 15px; margin: 20px 0; }
+        .stat-card { flex: 1; min-width: 140px; padding: 15px; background: #f8f9fa; border-left: 5px solid #0f3082; border-radius: 5px; }
+        .stat-card h4 { margin: 0; font-size: 8.5pt; text-transform: uppercase; color: #666; }
+        .stat-card .val { font-size: 18pt; font-weight: bold; margin: 5px 0; }
+
+        .cwv-card { text-align: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; flex: 1; }
+        .cwv-val { font-size: 20pt; font-weight: bold; }
+        .alert-box { padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9pt; }
+        .data-table th { background-color: #0f3082; color: white; padding: 8px; text-align: left; }
+        .data-table td { padding: 8px; border-bottom: 1px solid #eee; }
+        .data-table tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-bad { color: #dc3545; font-weight: bold; }
+        .status-warn { color: #f06c00; font-weight: bold; }
+
+        .ia-box { background: #fff8f4; border: 2px dashed #f06c00; padding: 25px; border-radius: 15px; font-style: italic; margin-bottom: 30px; }
+
+        /* Estilos para listas de errores */
+        .error-list { margin-top: 5px; font-size: 8.5pt; color: #555; padding-left: 20px; word-break: break-all; }
+        .error-list li { margin-bottom: 3px; }
+        .error-block { margin-bottom: 15px; padding: 10px; background: #fcfcfc; border-radius: 5px; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="cover">
+        <div class="logo">N<span>16</span></div>
+        <h1 style="font-size: 40pt; letter-spacing: 3px;">AUDITORÍA ESTRATÉGICA</h1>
+        <div style="width: 100px; height: 5px; background: #f06c00; margin: 20px auto;"></div>
+        <p style="font-size: 20pt;">{{ nombre_cliente }}</p>
+        <p style="font-size: 14pt; opacity: 0.8;">{{ dominio }} | {{ fecha }}</p>
+    </div>
+
+    <div class="page">
+        <h2 class="brand-blue">Visión Estratégica SEO</h2>
+        <div class="ia-box">
+            {{ diagnostico_ia | safe }}
+        </div>
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+
+    {% if directo %}
+    <div class="page">
+        <h2 class="brand-blue">Análisis de Mercado: Su Rival Directo</h2>
+        <p style="font-size: 10pt; color: #666; margin-bottom: 15px;">Analizamos las búsquedas de sus clientes potenciales para descubrir cuánto tráfico le está robando su competidor más cercano.</p>
+        
+        <div style="background: #fff4ec; border-left: 5px solid #f06c00; padding: 12px; margin-bottom: 20px; border-radius: 5px;">
+            <strong style="color: #f06c00; font-size: 11pt;">🥊 Rival a Vencer: {{ directo.dominio }}</strong><br>
+            Este competidor atrae un tráfico estimado de <strong class="brand-orange">{{ directo.trafico }} visitas mensuales</strong>.
+        </div>
+        
+        <div class="grid" style="margin-top: 10px; margin-bottom: 20px;">
+            <div class="stat-card" style="border-left-color: {{ '#dc3545' if directo.es_critico else '#0f3082' }}; padding: 15px;">
+                <h4 style="font-size: 8pt;">Servicios Superados</h4>
+                <div class="val" style="color: {{ '#dc3545' if directo.es_critico else '#0f3082' }}; font-size: 18pt;">
+                    {{ directo.batallas_perdidas }} <span style="font-size: 10pt; color: #666;">de {{ directo.total_batallas }}</span>
+                </div>
+                <div style="font-size: 8pt; color: #666;">{{ 'Urgente recuperar' if directo.es_critico else 'Competitivo' }}</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #f06c00; background-color: #fff4ec; padding: 15px;">
+                <h4 style="font-size: 8pt;">Tráfico en Riesgo</h4>
+                <div class="val brand-orange" style="font-size: 18pt;">{{ directo.volumen_perdido }}</div>
+                <div style="font-size: 8pt; color: #666;">Búsquedas mensuales perdidas</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <img src="data:image/png;base64,{{ directo.grafico }}" style="width: 95%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 0;">📋 Palabras Clave: El Botín a Recuperar Hoy</h3>
+        <table class="data-table" style="margin-top: 5px;">
+            <thead>
+                <tr>
+                    <th>Servicio Buscado</th>
+                    <th>Búsquedas/Mes</th>
+                    <th>Costo Ads</th>
+                    <th>Su Posición</th>
+                    <th>Pos. Rival</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kw in directo.lista_keywords %}
+                <tr>
+                    <td><strong>{{ kw.keyword }}</strong></td>
+                    <td>{{ kw.volumen }} 🔍</td>
+                    <td style="color: #555;">${{ kw.cpc_limpio }}</td>
+                    <td class="{{ 'status-bad' if kw.pos_cliente > kw.pos_competidor else 'status-ok' }}">{{ kw.pos_cliente or '>100' }}</td>
+                    <td class="{{ 'status-ok' if kw.pos_cliente > kw.pos_competidor else 'status-bad' }}">{{ kw.pos_competidor or '>100' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+    {% endif %}
+
+    {% if referente %}
+    <div class="page">
+        <h2 class="brand-blue">Análisis de Mercado: El Líder del Sector</h2>
+        <p style="font-size: 10pt; color: #666; margin-bottom: 15px;">Para proyectar el techo de crecimiento orgánico, analizamos al mayor acaparador de clientes en su nicho de mercado.</p>
+        
+        <div style="background: #eef2fa; border-left: 5px solid #0f3082; padding: 12px; margin-bottom: 20px; border-radius: 5px;">
+            <strong class="brand-blue" style="font-size: 11pt;">👑 El Gigante del Nicho: {{ referente.dominio }}</strong><br>
+            Este referente capta <strong class="brand-blue">{{ referente.trafico }} visitas mensuales</strong>. Nuestra estrategia escalonada busca arrebatarle esta cuota de mercado.
+        </div>
+        
+        <div class="grid" style="margin-top: 10px; margin-bottom: 20px;">
+            <div class="stat-card" style="border-left-color: #0f3082; padding: 15px;">
+                <h4 style="font-size: 8pt;">Servicios Superados</h4>
+                <div class="val" style="color: #0f3082; font-size: 18pt;">
+                    {{ referente.batallas_perdidas }} <span style="font-size: 10pt; color: #666;">de {{ referente.total_batallas }}</span>
+                </div>
+                <div style="font-size: 8pt; color: #666;">Brecha contra el líder</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #0f3082; padding: 15px;">
+                <h4 style="font-size: 8pt;">Tráfico Acaparado</h4>
+                <div class="val brand-blue" style="font-size: 18pt;">{{ referente.volumen_perdido }}</div>
+                <div style="font-size: 8pt; color: #666;">Búsquedas que domina el líder</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <img src="data:image/png;base64,{{ referente.grafico }}" style="width: 95%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 0;">📋 Oportunidades Clave para Escalar</h3>
+        <table class="data-table" style="margin-top: 5px;">
+            <thead>
+                <tr>
+                    <th>Servicio Buscado</th>
+                    <th>Búsquedas/Mes</th>
+                    <th>Costo Ads</th>
+                    <th>Su Posición</th>
+                    <th>Pos. Líder</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kw in referente.lista_keywords %}
+                <tr>
+                    <td><strong>{{ kw.keyword }}</strong></td>
+                    <td>{{ kw.volumen }} 🔍</td>
+                    <td style="color: #555;">${{ kw.cpc_limpio }}</td>
+                    <td class="{{ 'status-bad' if kw.pos_cliente > kw.pos_competidor else 'status-ok' }}">{{ kw.pos_cliente or '>100' }}</td>
+                    <td class="brand-blue" style="font-weight: bold;">{{ kw.pos_competidor or '>100' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+    {% endif %}
+
+    {% if kw_metrics.total > 0 %}
+    <div class="page">
+        <h2 class="brand-blue">Presencia Actual en Google (Tráfico Orgánico)</h2>
+        <p style="font-size: 10pt; color: #666; margin-bottom: 15px;">Descubrimos cómo te buscan tus clientes exactos y cuánto dinero te estás ahorrando al no pagarle a Google Ads por esos clics.</p>
+
+        <div class="grid">
+            <div class="stat-card">
+                <h4>Términos en Google</h4>
+                <div class="val brand-blue">{{ kw_metrics.total }}</div>
+                <div style="font-size: 8pt; color: #666;">Palabras relevantes</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #00c04b;">
+                <h4>Líder Top 3</h4>
+                <div class="val" style="color: #00c04b;">{{ kw_metrics.top3 }}</div>
+                <div style="font-size: 8pt; color: #666;">Donde ganas clientes</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #f06c00; background-color: #fff4ec;">
+                <h4>A un paso (Pág 2)</h4>
+                <div class="val brand-orange">{{ kw_metrics.pag2 }}</div>
+                <div style="font-size: 8pt; color: #666;">Oportunidad urgente</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #28a745; background-color: #f0fff4;">
+                <h4>Ahorro en Ads</h4>
+                <div class="val" style="color: #28a745;">${{ kw_metrics.ahorro_str }}</div>
+                <div style="font-size: 8pt; color: #666;">Dinero que no pagas al mes</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px;">
+            <div style="width: 48%; text-align: center;">
+                <h3 class="brand-blue" style="font-size: 11pt; margin-bottom: 5px;">Distribución del Tráfico</h3>
+                <img src="data:image/png;base64,{{ kw_grafico }}" style="width: 100%;">
+            </div>
+            <div style="width: 50%;">
+                <h3 class="brand-blue" style="font-size: 11pt; margin-bottom: 5px;">Oportunidades Urgentes (Página 2)</h3>
+                <p style="font-size: 9pt; color: #666; margin-top: 0; margin-bottom: 10px;">Si subimos estas palabras a Página 1, tus ventas explotarán.</p>
+                {% if kw_urgentes %}
+                <table class="data-table" style="margin-top: 0;">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Volumen</th>
+                            <th>Pos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in kw_urgentes %}
+                        <tr>
+                            <td><strong>{{ u.keyword }}</strong></td>
+                            <td>{{ u.volumen }}</td>
+                            <td class="status-warn">{{ u.posicion }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="background: #f8f9fa; padding: 15px; text-align: center; border: 1px dashed #ccc;">
+                    <p style="color: #666; font-size: 9pt;">No tienes palabras estancadas en página 2.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 25px;">🏆 Tus Mejores Búsquedas Actuales</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Servicio Buscado (Qué escribe el cliente)</th>
+                    <th>Volumen/Mes</th>
+                    <th>Costo Ads</th>
+                    <th>Posición en Google</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kw in kw_top %}
+                <tr>
+                    <td><strong>{{ kw.keyword }}</strong></td>
+                    <td>{{ kw.volumen }} 🔍</td>
+                    <td style="color: #555;">${{ kw.cpc_limpio }}</td>
+                    <td class="status-ok" style="font-size: 11pt;">{{ kw.posicion }} 🏆</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+    {% endif %}
+
+    {% if lh_urls %}
+    <div class="page" style="page-break-after: always; height: auto;">
+        <h2 class="brand-blue">Velocidad y Experiencia de Usuario (Core Web Vitals)</h2>
+        <p style="margin-bottom: 20px;">Evaluamos el rendimiento de sus páginas principales simulando conexiones de usuarios reales tanto en dispositivos móviles (la prioridad de Google) como en computadoras.</p>
+        
+        {% for item in lh_urls %}
+        <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #fff;">
+            <h3 style="color: #0f3082; margin-top: 0; margin-bottom: 15px; font-size: 10.5pt; word-break: break-all; background-color: #eef2fa; padding: 8px; border-radius: 4px;">
+                🌐 URL Auditada: <span style="font-weight: normal;">{{ item.url }}</span>
+            </h3>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 50%; vertical-align: top; padding-right: 15px; border-right: 1px dashed #ccc;">
+                        <h4 style="color: #f06c00; margin-top: 0; text-align: center; font-size: 10pt;">📱 Dispositivo Móvil</h4>
+                        {% if item.mobile %}
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 26pt; font-weight: bold; color: {{ item.mobile.perf_color }};">{{ item.mobile.perf_int }}/100</div>
+                            </div>
+                            <div style="width: 100%; background-color: #e9ecef; border-radius: 4px; height: 8px; margin-bottom: 15px;">
+                                <div style="width: {{ item.mobile.perf_int }}%; background-color: {{ item.mobile.perf_color }}; height: 100%; border-radius: 4px;"></div>
+                            </div>
+                            
+                            <table style="width: 100%; font-size: 8pt; text-align: center; background: #f9f9f9; border-radius: 5px; padding: 5px;">
+                                <tr>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.mobile.lcp_color }}; font-size: 11pt;">{{ item.mobile.lcp_sec }}s</strong><br><span style="color:#666;">Carga (LCP)</span></td>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.mobile.fcp_color }}; font-size: 11pt;">{{ item.mobile.fcp_sec }}s</strong><br><span style="color:#666;">1ra Señal</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.mobile.si_color }}; font-size: 11pt;">{{ item.mobile.si_sec }}s</strong><br><span style="color:#666;">Velocidad</span></td>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.mobile.cls_color }}; font-size: 11pt;">{{ item.mobile.cls_val }}</strong><br><span style="color:#666;">Saltos Visuales</span></td>
+                                </tr>
+                            </table>
+                        {% else %}
+                            <div style="text-align: center; color: #999; font-size: 9pt; padding: 20px;">No hay datos móviles</div>
+                        {% endif %}
+                    </td>
+                    <td style="width: 50%; vertical-align: top; padding-left: 15px;">
+                        <h4 style="color: #0f3082; margin-top: 0; text-align: center; font-size: 10pt;">💻 Computadora (Desktop)</h4>
+                        {% if item.desktop %}
+                            <div style="text-align: center; margin-bottom: 10px;">
+                                <div style="font-size: 26pt; font-weight: bold; color: {{ item.desktop.perf_color }};">{{ item.desktop.perf_int }}/100</div>
+                            </div>
+                            <div style="width: 100%; background-color: #e9ecef; border-radius: 4px; height: 8px; margin-bottom: 15px;">
+                                <div style="width: {{ item.desktop.perf_int }}%; background-color: {{ item.desktop.perf_color }}; height: 100%; border-radius: 4px;"></div>
+                            </div>
+                            
+                            <table style="width: 100%; font-size: 8pt; text-align: center; background: #f9f9f9; border-radius: 5px; padding: 5px;">
+                                <tr>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.desktop.lcp_color }}; font-size: 11pt;">{{ item.desktop.lcp_sec }}s</strong><br><span style="color:#666;">Carga (LCP)</span></td>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.desktop.fcp_color }}; font-size: 11pt;">{{ item.desktop.fcp_sec }}s</strong><br><span style="color:#666;">1ra Señal</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.desktop.si_color }}; font-size: 11pt;">{{ item.desktop.si_sec }}s</strong><br><span style="color:#666;">Velocidad</span></td>
+                                    <td style="padding: 5px;"><strong style="color: {{ item.desktop.cls_color }}; font-size: 11pt;">{{ item.desktop.cls_val }}</strong><br><span style="color:#666;">Saltos Visuales</span></td>
+                                </tr>
+                            </table>
+                        {% else %}
+                            <div style="text-align: center; color: #999; font-size: 9pt; padding: 20px;">No hay datos de escritorio</div>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        {% endfor %}
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+    {% endif %}
+
+    <div class="page" style="height: auto; page-break-after: always;">
+        <h2 class="brand-blue">Auditoría Interna de la Página Web</h2>
+        <p style="margin-bottom: 15px;">Analizamos cada rincón de su sitio web buscando las fallas estructurales exactas que le impiden posicionar y retener clientes.</p>
+
+        <div class="grid" style="margin-top: 10px; margin-bottom: 15px;">
+            <div class="stat-card">
+                <h4>Puntuación de Salud</h4>
+                <div class="val brand-blue">{{ onpage.onpage_score }}%</div>
+            </div>
+            <div class="stat-card">
+                <h4>Páginas Indexadas</h4>
+                <div class="val">{{ onpage.paginas_indexadas }}</div>
+            </div>
+            <div class="stat-card">
+                <h4>Enlaces Salientes</h4>
+                <div class="val">{{ onpage.enlaces_salientes }}</div>
+            </div>
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px;">🛠️ Configuración Básica del Servidor</h3>
+        <div class="grid" style="margin-top: 10px; margin-bottom: 25px;">
+            <div class="stat-card" style="padding: 12px; min-width: 100px;">
+                <h4 style="font-size: 8pt;">Mapa del Sitio</h4>
+                <div class="val {{ 'status-ok' if onpage.tiene_sitemap else 'status-bad' }}" style="font-size: 14pt;">
+                    {{ '✅ Encontrado' if onpage.tiene_sitemap else '❌ Faltante' }}
+                </div>
+            </div>
+            <div class="stat-card" style="padding: 12px; min-width: 100px;">
+                <h4 style="font-size: 8pt;">Permisos (Robots)</h4>
+                <div class="val {{ 'status-ok' if onpage.tiene_robots_txt else 'status-bad' }}" style="font-size: 14pt;">
+                    {{ '✅ Encontrado' if onpage.tiene_robots_txt else '❌ Faltante' }}
+                </div>
+            </div>
+            <div class="stat-card" style="padding: 12px; min-width: 100px;">
+                <h4 style="font-size: 8pt;">Seguridad SSL</h4>
+                <div class="val {{ 'status-ok' if onpage.certificado_ssl_valido else 'status-bad' }}" style="font-size: 14pt;">
+                    {{ '✅ Válido' if onpage.certificado_ssl_valido else '❌ Peligro' }}
+                </div>
+            </div>
+            <div class="stat-card" style="padding: 12px; min-width: 100px;">
+                <h4 style="font-size: 8pt;">Idioma Principal</h4>
+                <div class="val brand-blue" style="font-size: 14pt;">🌍 {{ onpage.idioma_html or 'N/A' }}</div>
+            </div>
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px;">🚦 Fugas de Tráfico (Páginas Rotas o Caídas)</h3>
+        
+        {% if detalles_seo.e404.count > 0 %}
+        <div class="error-block">
+            <strong class="status-bad">❌ {{ detalles_seo.e404.count }} Páginas No Existen (404)</strong> - El cliente hace clic y ve una página de error.
+            <ul class="error-list">
+                {% for url in detalles_seo.e404.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.e404.hay_mas %} <li><em>...y {{ detalles_seo.e404.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.e5xx.count > 0 %}
+        <div class="error-block">
+            <strong class="status-bad">🔥 {{ detalles_seo.e5xx.count }} Páginas CAÍDAS (5xx)</strong> - El servidor colapsó al intentar abrir estas rutas.
+            <ul class="error-list">
+                {% for url in detalles_seo.e5xx.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.e5xx.hay_mas %} <li><em>...y {{ detalles_seo.e5xx.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.e3xx.count > 0 %}
+        <div class="error-block">
+            <strong class="status-warn">⚠️ {{ detalles_seo.e3xx.count }} Desvíos (Redirecciones 3xx)</strong> - El cliente es enviado a otra página automáticamente.
+            <ul class="error-list">
+                {% for url in detalles_seo.e3xx.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.e3xx.hay_mas %} <li><em>...y {{ detalles_seo.e3xx.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.e404.count == 0 and detalles_seo.e5xx.count == 0 and detalles_seo.e3xx.count == 0 %}
+        <p class="status-ok" style="font-size: 9pt;">✅ Cero errores de servidor. Todas las rutas analizadas abren correctamente.</p>
+        {% endif %}
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 25px; border-bottom: 1px solid #eee; padding-bottom: 5px;">📝 Arquitectura y Calidad de Contenido</h3>
+
+        {% if detalles_seo.h1.count > 0 %}
+        <div class="error-block">
+            <strong class="status-warn">⚠️ {{ detalles_seo.h1.count }} Sin Título Principal (H1)</strong> - Google no sabe de qué tratan estas páginas.
+            <ul class="error-list">
+                {% for url in detalles_seo.h1.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.h1.hay_mas %} <li><em>...y {{ detalles_seo.h1.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.pobre.count > 0 %}
+        <div class="error-block">
+            <strong class="status-bad">❌ {{ detalles_seo.pobre.count }} Páginas con Contenido Pobre</strong> - Tienen muy poco texto y Google las considera de "Baja Calidad".
+            <ul class="error-list">
+                {% for url in detalles_seo.pobre.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.pobre.hay_mas %} <li><em>...y {{ detalles_seo.pobre.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if detalles_seo.alt.count > 0 %}
+        <div class="error-block">
+            <strong class="status-warn">⚠️ {{ detalles_seo.alt.count }} Imágenes sin Etiqueta ALT</strong> - Imágenes que Google no puede "leer" ni posicionar.
+            <ul class="error-list">
+                {% for url in detalles_seo.alt.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.alt.hay_mas %} <li><em>...y {{ detalles_seo.alt.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.h1.count == 0 and detalles_seo.pobre.count == 0 and detalles_seo.alt.count == 0 %}
+        <p class="status-ok" style="font-size: 9pt;">✅ Excelente organización de texto y contenido.</p>
+        {% endif %}
+
+        <h3 class="brand-blue" style="font-size: 11pt; margin-top: 25px; border-bottom: 1px solid #eee; padding-bottom: 5px;">🌐 Qué ve el cliente antes de entrar (Optimización Visual)</h3>
+
+        {% if detalles_seo.meta.count > 0 %}
+        <div class="error-block">
+            <strong class="status-warn">⚠️ {{ detalles_seo.meta.count }} Textos Repetidos en Google</strong> - Muestran el mismo título y descripción. ¡Hay que diferenciarlos para que el cliente sepa a cuál entrar!
+            <ul class="error-list">
+                {% for url in detalles_seo.meta.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.meta.hay_mas %} <li><em>...y {{ detalles_seo.meta.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.og.count > 0 %}
+        <div class="error-block">
+            <strong class="status-warn">⚠️ {{ detalles_seo.og.count }} Problemas al Compartir (WhatsApp/Facebook)</strong> - Si alguien comparte estas páginas en redes sociales, no saldrá imagen ni título atractivo.
+            <ul class="error-list">
+                {% for url in detalles_seo.og.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.og.hay_mas %} <li><em>...y {{ detalles_seo.og.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.lenta.count > 0 %}
+        <div class="error-block">
+            <strong class="status-bad">🐌 {{ detalles_seo.lenta.count }} Páginas con Servidor Lento</strong> - Tardan demasiado en responder individualmente. El cliente se irá a la competencia.
+            <ul class="error-list">
+                {% for url in detalles_seo.lenta.urls %} <li>{{ url }}</li> {% endfor %}
+                {% if detalles_seo.lenta.hay_mas %} <li><em>...y {{ detalles_seo.lenta.restantes }} páginas más.</em></li> {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if detalles_seo.meta.count == 0 and detalles_seo.og.count == 0 and detalles_seo.lenta.count == 0 %}
+        <p class="status-ok" style="font-size: 9pt;">✅ Servidor rápido y etiquetas de búsqueda/redes configuradas correctamente.</p>
+        {% endif %}
+
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+
+    <div class="page">
+        <h2 class="brand-blue">Autoridad y Relaciones Públicas Digitales</h2>
+        <p style="margin-bottom: 20px;">Analizamos qué otras páginas web te están recomendando. Para Google, cada enlace externo hacia tu web funciona como un 'voto de confianza'.</p>
+
+        <div class="grid">
+            <div class="stat-card">
+                <h4>Autoridad Web</h4>
+                <div class="val brand-blue">{{ bl_metrics.rank }}/1000</div>
+                <div style="font-size: 8.5pt; color: #666; margin-top: 5px;">Tu reputación global</div>
+            </div>
+            <div class="stat-card">
+                <h4>Webs Referentes</h4>
+                <div class="val brand-orange">{{ bl_metrics.dominios }}</div>
+                <div style="font-size: 8.5pt; color: #666; margin-top: 5px;">Votos únicos</div>
+            </div>
+            <div class="stat-card">
+                <h4>Total Enlaces</h4>
+                <div class="val">{{ bl_metrics.enlaces }}</div>
+                <div style="font-size: 8.5pt; color: #666; margin-top: 5px;">Volumen total</div>
+            </div>
+            <div class="stat-card" style="border-left-color: {{ bl_metrics.spam_color }};">
+                <h4>Toxicidad (Spam)</h4>
+                <div class="val" style="color: {{ bl_metrics.spam_color }};">{{ bl_metrics.spam }}/100</div>
+                <div style="font-size: 8.5pt; color: #666; margin-top: 5px;">Estado: <strong>{{ bl_metrics.spam_text }}</strong></div>
+            </div>
+        </div>
+
+        <h3 class="brand-blue" style="font-size: 12pt; margin-top: 40px;">🏆 Tus Enlaces Más Poderosos (Top 5)</h3>
+        
+        {% if top_links %}
+        <table class="data-table" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th style="width: 35%;">Web que te enlaza</th>
+                    <th style="width: 20%;">Texto del enlace</th>
+                    <th style="width: 25%;">Fuerza del Voto</th>
+                    <th style="width: 20%;">Ubicación</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in top_links %}
+                <tr>
+                    <td style="word-break: break-all; color: #0f3082;">{{ link.origen }}</td>
+                    <td><em>"{{ link.anchor }}"</em></td>
+                    <td>
+                        <div style="font-weight: bold; margin-bottom: 3px;">{{ link.rank }} / 1000</div>
+                        <div style="width: 100%; background: #e9ecef; height: 6px; border-radius: 3px;">
+                            <div style="width: {{ link.rank_pct }}%; background: #f06c00; height: 100%; border-radius: 3px;"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="background: #eee; padding: 3px 8px; border-radius: 12px; font-size: 8.5pt;">
+                            {{ link.ubicacion }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="ia-box" style="margin-top: 30px; padding: 15px; border-width: 1px;">
+            <strong style="color: #f06c00;">💡 Nota Estratégica:</strong> Si la 'Ubicación' dice <em>Pie de página</em>, significa que el enlace probablemente fue comprado o es automático. Google le da <strong>mucho más valor</strong> a los enlaces que están de forma natural dentro de un <em>Artículo</em>.
+        </div>
+        {% else %}
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; border: 1px dashed #ccc; margin-top: 20px;">
+            <p style="color: #666;">No se detectaron enlaces de alta calidad apuntando a su sitio web. Esto representa una prioridad absoluta para iniciar una campaña de PR Digital.</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+
+    {% if menciones_ia %}
+    <div class="page" style="page-break-after: auto;">
+        <h2 class="brand-blue">Reputación en Inteligencia Artificial (SGE)</h2>
+        <p style="font-size: 10pt; color: #555; margin-bottom: 20px;">
+            A continuación, extraemos las respuestas literales que los motores generativos están dando a los usuarios sobre su marca hoy:
+        </p>
+
+        {% for mencion in menciones_ia %}
+        <div style="background: #ffffff; border: 1px solid #ddd; border-left: 5px solid #0f3082; padding: 20px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #f06c00; font-size: 11pt;">
+                Búsqueda: <em>"{{ mencion.pregunta }}"</em>
+            </h4>
+            <p style="font-size: 9.5pt; color: #333;">{{ mencion.respuesta }}</p>
+        </div>
+        {% endfor %}
+        <div class="footer">Auditoria SEO | {{ nombre_cliente }}</div>
+    </div>
+    {% endif %}
+
+</body>
+</html>
