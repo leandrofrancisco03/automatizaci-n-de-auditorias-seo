@@ -9,6 +9,7 @@ import io
 import json
 import sys
 import toml
+import requests
 import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
@@ -20,6 +21,10 @@ ruta_secrets = os.path.join(os.path.dirname(ruta_base), ".streamlit", "secrets.t
 try:
     secrets = toml.load(ruta_secrets)
     DB_URL = f"postgresql://{secrets['DB_USER']}:{secrets['DB_PASS']}@{secrets.get('DB_HOST', '178.18.254.186')}:{secrets['DB_PORT']}/{secrets['DB_NAME']}"
+    
+    # CARGAMOS LA URL DEL WEBHOOK DESDE EL TOML
+    WEBHOOK_URL = secrets.get('WEBHOOK_N8N') 
+    
 except Exception as e:
     print(f"❌ Error leyendo secrets.toml: {e}")
     sys.exit(1)
@@ -306,8 +311,38 @@ def generar_auditoria_completa_pdf(auditoria_id):
         nombre_archivo = f"Auditoria_N16_{nombre_limpio}_{auditoria_id}.pdf"
         output_path = os.path.join(output_dir, nombre_archivo)
         
+        # ... (código anterior) ...
         HTML(string=html_content, base_url=ruta_base).write_pdf(output_path)
-        print(f"✅ ¡Éxito! Reporte corporativo generado: {output_path}")
+        print(f"✅ ¡Éxito! Reporte corporativo generado localmente: {output_path}")
+
+        # --- 9. ENVIAR EL PDF A n8n VÍA WEBHOOK ---
+        if WEBHOOK_URL:
+            print("🚀 Enviando reporte a n8n...")
+            
+            datos_post = {
+                "cliente": hist['cliente_nombre'],
+                "dominio": hist['dominio'],
+                "auditoria_id": auditoria_id,
+                "nombre_archivo": nombre_archivo
+            }
+
+            with open(output_path, 'rb') as archivo_pdf:
+                archivos_post = {
+                    'pdf_reporte': (nombre_archivo, archivo_pdf, 'application/pdf')
+                }
+                
+                try:
+                    # 🔥 AHORA USA LA VARIABLE DINÁMICA
+                    respuesta = requests.post(WEBHOOK_URL, data=datos_post, files=archivos_post)
+                    
+                    if respuesta.status_code == 200:
+                        print("✅ ¡PDF enviado exitosamente al webhook de n8n!")
+                    else:
+                        print(f"⚠️ Error en webhook (Código {respuesta.status_code}): {respuesta.text}")
+                except Exception as err_req:
+                    print(f"❌ Error de conexión con n8n: {err_req}")
+        else:
+            print("⚠️ No se encontró la URL del webhook en el secrets.toml, saltando envío.")
 
     except Exception as e:
         print(f"❌ Error fatal: {e}")

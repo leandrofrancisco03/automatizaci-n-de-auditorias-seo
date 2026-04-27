@@ -34,3 +34,4 @@ build/
 Thumbs.db
 .generar_pdf.cpython-310.pyc
 agencia_n16_auditoria/reports/
+agencia_n16_auditoria/
