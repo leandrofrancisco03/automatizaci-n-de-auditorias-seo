@@ -13,6 +13,7 @@ import requests
 import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
+import numpy as np
 
 # --- 1. LECTURA SEGURA DE CREDENCIALES ---
 ruta_base = os.path.dirname(os.path.abspath(__file__))
@@ -29,71 +30,161 @@ except Exception as e:
     print(f"❌ Error leyendo secrets.toml: {e}")
     sys.exit(1)
 
-# --- 2. FUNCIONES DE APOYO Y GRÁFICOS ---
+def configurar_estilo_graficos():
+    """Configura tipografía y colores base para todos los gráficos"""
+    plt.rcParams.update({
+        'font.family': 'sans-serif',
+        'font.sans-serif': ['Helvetica', 'Arial', 'DejaVu Sans'],
+        'figure.facecolor': '#ffffff',
+        'axes.facecolor': '#ffffff',
+        'axes.edgecolor': '#e0e0e0',
+        'axes.grid': True,
+        'grid.color': '#f0f0f0',
+        'grid.linestyle': '--',
+        'grid.alpha': 0.6,
+        'xtick.color': '#6c757d',
+        'ytick.color': '#6c757d',
+        'text.color': '#2b2b36',
+        'font.size': 10,
+        'axes.titlesize': 12,
+        'axes.titleweight': '600',
+        'axes.titlecolor': '#0f3082'
+    })
+
 def generar_grafico_posiciones(lista_kws):
     if not lista_kws: return ""
-    keywords = [(k['keyword'][:15] + '..') if len(k['keyword']) > 15 else k['keyword'] for k in lista_kws][:6]
-    pos_cliente = [k['pos_cliente'] or 100 for k in lista_kws][:6]
-    pos_comp = [k['pos_competidor'] or 100 for k in lista_kws][:6]
-
-    fig, ax = plt.subplots(figsize=(10, 4.5), dpi=200)
-    fig.patch.set_facecolor('#ffffff')
-    ax.set_facecolor('#ffffff')
-
-    x = range(len(keywords))
-    width = 0.35
+    configurar_estilo_graficos()
     
-    bars1 = ax.bar(x, pos_cliente, width, label='Tu Posición', color='#0f3082', zorder=3)
-    bars2 = ax.bar([i + width for i in x], pos_comp, width, label='Competidor', color='#f06c00', zorder=3)
+    keywords = [(k['keyword'][:14] + '…') if len(k['keyword']) > 14 else k['keyword'] for k in lista_kws][:6]
+    pos_cliente = [min(k['pos_cliente'] or 101, 101) for k in lista_kws][:6]
+    pos_comp = [min(k['pos_competidor'] or 101, 101) for k in lista_kws][:6]
 
+    fig, ax = plt.subplots(figsize=(10, 5.4), dpi=180)
+    x = np.arange(len(keywords))
+    width = 0.32
+    
+    bars1 = ax.bar(x - width/2, pos_cliente, width, label='Tu Web', color='#0f3082', edgecolor='#ffffff', linewidth=1.5, zorder=3)
+    bars2 = ax.bar(x + width/2, pos_comp, width, label='Competidor', color='#f06c00', edgecolor='#ffffff', linewidth=1.5, zorder=3)
+
+    # Invertimos eje: 0 arriba, 100 abajo
+    ax.invert_yaxis()
+    
+    # 🔥 CLAVE: Margen NEGATIVO grande arriba (-18) para que caban las barras cortas (líder)
+    max_pos = max(max(pos_cliente), max(pos_comp), 15)
+    ax.set_ylim(max_pos + 12, -18)  
+
+    ax.yaxis.grid(True, linestyle='--', color='#e9ecef', zorder=0)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_color('#dddddd')
-    ax.spines['bottom'].set_color('#dddddd')
-    ax.yaxis.grid(True, linestyle='-', color='#eeeeee', zorder=0)
-    ax.set_axisbelow(True)
-
-    ax.set_xticks([i + width/2 for i in x])
-    ax.set_xticklabels(keywords, rotation=15, ha='right', fontsize=9)
-    ax.set_ylabel('Posición en Google (Menor es mejor)', fontsize=10, color='#666666', labelpad=10)
-    ax.invert_yaxis() 
-    ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=2, frameon=False)
     
-    for bar in bars1:
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 5, f"{int(bar.get_height())}", ha='center', va='bottom', color='white', fontsize=8, fontweight='bold')
-    for bar in bars2:
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 5, f"{int(bar.get_height())}", ha='center', va='bottom', color='white', fontsize=8, fontweight='bold')
+    ax.set_xticks(x)
+    ax.set_xticklabels(keywords, rotation=25, ha='right', fontsize=9.5)
+    ax.legend(bbox_to_anchor=(1.01, 1), loc='upper left', frameon=False, fontsize=9)
 
-    plt.tight_layout()
+    # ─── LÓGICA INTELIGENTE DE ETIQUETAS ───
+    for bar in bars1 + bars2:
+        h = bar.get_height()
+        if h >= 101: 
+            continue
+        
+        color_barra = bar.get_facecolor()  # Obtenemos el color real de esta barra
+        
+        if h >= 20:  
+            # BARRA LARGA (ej: posición 63): Texto BLANCO DENTRO
+            ax.text(
+                bar.get_x() + bar.get_width()/2., 
+                h - 4,            # Dentro de la barra (arriba del borde inferior)
+                f'{int(h)}', 
+                ha='center', va='top',
+                color='white', fontweight='bold', fontsize=8.5,
+                zorder=5  # Asegura que esté sobre la barra
+            )
+        else:  
+            # BARRA CORTA (ej: posición 1, 5, 7): Texto COLOR FUERA (cuelga abajo)
+            ax.text(
+                bar.get_x() + bar.get_width()/2., 
+                h + 4,            # Fuera de la barra (debajo de ella visualmente)
+                f'{int(h)}', 
+                ha='center', va='top',  # 'top' hace que el texto cuelge hacia abajo
+                color=color_barra, fontweight='bold', fontsize=9,
+                zorder=5
+            )
+            
+    plt.tight_layout(rect=[0, 0, 0.88, 1]) 
     img = io.BytesIO()
-    plt.savefig(img, format='png', bbox_inches='tight')
-    plt.close()
+    plt.savefig(img, format='png', bbox_inches='tight', facecolor='white')
+    plt.close(fig)
     return base64.b64encode(img.getvalue()).decode()
 
 def generar_grafico_distribucion_kw(top3, pag1, pag2, mas20):
-    labels_completas = ['Top 3 (Líder)', 'Pos 4-10 (Pág 1)', 'Pos 11-20 (Pág 2)', 'Pos 21+ (Invisibles)']
-    sizes_completos = [top3, pag1, pag2, mas20]
-    colors_completos = ['#0f3082', '#00c04b', '#f06c00', '#dc3545']
+    configurar_estilo_graficos()
     
-    labels = [l for l, s in zip(labels_completas, sizes_completos) if s > 0]
-    colors = [c for c, s in zip(colors_completos, sizes_completos) if s > 0]
-    sizes = [s for s in sizes_completos if s > 0]
+    labels_base = ['Top 3 (Líder)', 'Pos 4-10 (Pág 1)', 'Pos 11-20 (Pág 2)', 'Pos 21+ (Invisibles)']
+    sizes_base = [top3, pag1, pag2, mas20]
+    colors_base = ['#0f3082', '#00c04b', '#f06c00', '#dc3545']
     
-    if not sizes: return ""
+    total_kws = sum(s for s in sizes_base if s > 0)
+    if total_kws == 0:
+        return ""
+
+    data_points = []
+    explode_values = []
+
+    for label, size, color in zip(labels_base, sizes_base, colors_base):
+        if size > 0:
+            percentage = (size / total_kws) * 100
+            data_points.append({
+                "label": label,
+                "size": size,
+                "color": color,
+                "legend_label": f"{label}: {size} ({percentage:.1f}%)"
+            })
+            explode_values.append(0.06 if "Top 3" in label else 0)
+
+    if not data_points:
+        return ""
     
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=200)
+    sizes = [d['size'] for d in data_points]
+    colors = [d['color'] for d in data_points]
+    legend_labels = [d['legend_label'] for d in data_points]
+
+    fig, ax = plt.subplots(figsize=(7.8, 4.6), dpi=180)
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('white')
+    
     wedges, texts, autotexts = ax.pie(
-        sizes, colors=colors, startangle=90, 
-        autopct='%1.1f%%', textprops=dict(color="w", weight="bold", fontsize=9),
-        wedgeprops=dict(width=0.4, edgecolor='w', linewidth=2)
+        sizes,
+        colors=colors,
+        startangle=90,
+        explode=explode_values,
+        autopct=lambda p: f'{p:.1f}%' if p >= 8 else '',
+        pctdistance=0.74,
+        textprops=dict(color='white', weight='bold', fontsize=9),
+        wedgeprops=dict(width=0.42, edgecolor='white', linewidth=2.2)
     )
-    
-    ax.legend(wedges, labels, title="Zonas de Google", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1), frameon=False, fontsize=9)
-    plt.tight_layout()
-    
+
+    # Centro del donut
+    ax.text(0, 0.06, f"{total_kws}", ha='center', va='center',
+            fontsize=20, fontweight='bold', color='#0f3082')
+    ax.text(0, -0.16, "Keywords", ha='center', va='center',
+            fontsize=10, color='#6c757d')
+
+    # Leyenda a la derecha
+    ax.legend(
+        wedges, legend_labels,
+        title="Distribución SEO",
+        loc='center left',
+        bbox_to_anchor=(1.05, 0.5),
+        frameon=False,
+        fontsize=9.2,
+        title_fontsize=11
+    )
+
+    plt.tight_layout(rect=[0, 0, 0.84, 1])
+
     img = io.BytesIO()
-    plt.savefig(img, format='png', bbox_inches='tight', transparent=True)
-    plt.close()
+    plt.savefig(img, format='png', bbox_inches='tight', facecolor='white')
+    plt.close(fig)
     return base64.b64encode(img.getvalue()).decode()
 
 def limpiar_respuesta_sge(texto):
